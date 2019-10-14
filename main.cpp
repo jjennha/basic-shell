@@ -278,10 +278,12 @@ void rec_cmd_exec(string command, vector<Process>* processes){
         }
         return;
     }
-    boolean b_task = (command.back()=='&');
-    if(b_task){
-        command = command.substr(0, command.find_last_not_of('&'));
+    boolean b_task = false; 
+    int b_pos = command.find("&");
+    if(b_pos >= 0){
+        command = command.substr(0, b_pos);
         command = trim_ends(command);
+        b_task = true;
     }
 
     input_parsed = parse_input(command, '|');
