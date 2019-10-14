@@ -132,9 +132,11 @@ vector<string> parse_input(string input, char del) {
 
 /**
  * executes input command
- *
  * @param input
- * */
+ * @param file_in
+ * @param file_out
+ * @param append
+ */
 void execute(vector<string> input,string file_in,string file_out,boolean append){
     int fd1, fd0;
     if(file_in.size() > 0){
@@ -148,7 +150,7 @@ void execute(vector<string> input,string file_in,string file_out,boolean append)
 
     if(file_out.size() > 0){
         if(append){
-            fd0=open(file_out.c_str(), O_RDWR | O_CREAT | O_APPEND,  S_IRUSR | S_IWUSR);
+            fd0=open(file_out.c_str(), O_RDWR | O_CREAT | O_APPEND,  S_IRUSR | S_IWUSR); // some of these flags may not be necessary.  I had to look up the flags and an example came up with these.
         }else{
             fd0 = open(file_out.c_str(), O_RDWR | O_CREAT | O_TRUNC,  S_IRUSR | S_IWUSR);
         }
@@ -167,14 +169,18 @@ void execute(vector<string> input,string file_in,string file_out,boolean append)
     }
 
     input_formatted.push_back(NULL);
-
     execvp(input[0].c_str(), &input_formatted[0]);
 }
 /**
  * receives input command and creates child process to execute command in
- *
+ * @param b_task
+ * @param processes
+ * @param command
  * @param input
- * */
+ * @param file_in
+ * @param file_out
+ * @param append
+ */
 void execute_cmd(boolean b_task, vector<Process>* processes,string command, vector<string> input,string& file_in,string& file_out,boolean append) {
     Process* p = new Process();
     pid_t child_pid = fork();
@@ -197,6 +203,7 @@ void execute_cmd(boolean b_task, vector<Process>* processes,string command, vect
 }
 
 /**
+ * Executes command in piping sequence
  * @param input
  * @param in
  * @param out
@@ -221,8 +228,11 @@ void execute_piped_cmd(vector<string> input, int in, int out){
 
 /**
  * Takes each command in the sequence of commands and processes them individually
- * @params input
- * */
+ * @param command
+ * @param input
+ * @param b_task
+ * @param processes
+ */
 void execute_pipe_cmd(string command,vector<string> input, boolean b_task, vector<Process>* processes){
     Process* p = new Process();
     pid_t child_pid = fork();
@@ -256,8 +266,8 @@ void execute_pipe_cmd(string command,vector<string> input, boolean b_task, vecto
 
 /**
  * execute commands. if multiple, handle recursively to handle nested commands
- *
  * @param command
+ * @param processes
  */
 void rec_cmd_exec(string command, vector<Process>* processes){
     vector<string> input_parsed = parse_input(command, ';');
@@ -396,33 +406,5 @@ int main(int argc, char** argv) {
 
         rec_cmd_exec(command, &processes);
         print_background(&processes);
-
     }
 }
-
-
-/*
- *
- * /**
- * receives input command and creates child process to execute command in
- *
- * @param input
- *
-Process* execute_bcmd(string command,vector<string> input,string file_in,string file_out,boolean append) {
-    Process* p = new Process();
-    pid_t child_pid = fork();
-    if(child_pid<0){
-        cerr<< "error: Process creation failed";
-        return p;
-    }else if(child_pid==0){
-        cout << '\n';
-        execute(input,file_in,file_out,append);
-        cerr << "unknown command\n";
-        exit(0);
-    }
-    p->pid = child_pid;
-    p->command = command;
-    return p;
-}
- *
- * */
